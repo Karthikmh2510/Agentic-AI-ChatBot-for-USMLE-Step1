@@ -1,0 +1,11 @@
+langchain
+langchain-core
+streamlit
+google-generativeai
+faiss-cpu
+PyPDF2
+chromadb
+langchain_google_genai
+python-dotenv
+langchain-community
+langchain-text-splitters
