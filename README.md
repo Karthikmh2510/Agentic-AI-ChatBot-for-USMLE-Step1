@@ -97,7 +97,7 @@ This project is a **RAG-Powered GenAI Application for USMLE Step-1 Query Answeri
 - **Karthik Manjunath Hadagali** – Developer & AI Engineer at MealMatch AI
 
 ## License
-This project is licensed under the **MIT License**. Feel free to contribute and enhance it!
+This project is licensed under the [MIT License](LICENSE). Feel free to contribute and enhance it!
 
 ---
 
