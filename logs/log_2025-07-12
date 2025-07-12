@@ -1,0 +1,45 @@
+2025-07-12 10:53:50,574 - INFO - Agentic RAG Started
+2025-07-12 10:53:50,592 - INFO - Environment variables loaded
+2025-07-12 10:53:53,373 - INFO - OpenAI LLM initialised
+2025-07-12 10:53:57,398 - INFO - Embedding model loaded: abhinand/MedEmbed-large-v0.1
+2025-07-12 10:53:58,150 - INFO - Vector store initialised
+2025-07-12 10:53:58,154 - INFO - Core prompts prepared
+2025-07-12 10:53:58,156 - INFO - Compiling LangGraph workflow
+2025-07-12 10:53:58,162 - INFO - Question received:  G i v e   t h e   t a b l e   o f   l y s o s o m a l   s t o r a g e   d i s o r d e r s 
+2025-07-12 10:53:59,529 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 10:54:03,810 - ERROR - Error during ask()
+2025-07-12 11:04:02,443 - INFO - Agentic RAG Started
+2025-07-12 11:04:02,446 - INFO - Environment variables loaded
+2025-07-12 11:04:03,661 - INFO - OpenAI LLM initialised
+2025-07-12 11:04:06,376 - INFO - Embedding model loaded: abhinand/MedEmbed-large-v0.1
+2025-07-12 11:04:07,131 - INFO - Vector store initialised
+2025-07-12 11:04:07,135 - INFO - Core prompts prepared
+2025-07-12 11:04:07,136 - INFO - Compiling LangGraph workflow
+2025-07-12 11:04:07,144 - INFO - Question received: Give the table of lysosomal storage disorders
+2025-07-12 11:04:08,191 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:04:10,826 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:04:10,862 - ERROR - Error during ask()
+2025-07-12 11:06:20,819 - INFO - Agentic RAG Started
+2025-07-12 11:06:20,822 - INFO - Environment variables loaded
+2025-07-12 11:06:22,094 - INFO - OpenAI LLM initialised
+2025-07-12 11:06:24,589 - INFO - Embedding model loaded: abhinand/MedEmbed-large-v0.1
+2025-07-12 11:06:25,303 - INFO - Vector store initialised
+2025-07-12 11:06:25,306 - INFO - Core prompts prepared
+2025-07-12 11:06:25,307 - INFO - Compiling LangGraph workflow
+2025-07-12 11:06:25,317 - INFO - Question received: Give the table of lysosomal storage disorders
+2025-07-12 11:06:26,450 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:06:27,500 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:06:27,533 - ERROR - Error during ask()
+2025-07-12 11:08:03,727 - INFO - Agentic RAG Started
+2025-07-12 11:08:03,729 - INFO - Environment variables loaded
+2025-07-12 11:08:05,033 - INFO - OpenAI LLM initialised
+2025-07-12 11:08:07,555 - INFO - Embedding model loaded: abhinand/MedEmbed-large-v0.1
+2025-07-12 11:08:08,617 - INFO - Vector store initialised
+2025-07-12 11:08:08,619 - INFO - Core prompts prepared
+2025-07-12 11:08:08,620 - INFO - Compiling LangGraph workflow
+2025-07-12 11:08:08,629 - INFO - Question received: Give the table of lysosomal storage disorders
+2025-07-12 11:08:09,606 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:08:10,684 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:08:10,711 - INFO - Generating final answer
+2025-07-12 11:08:30,124 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 11:08:30,129 - INFO - Answer generated

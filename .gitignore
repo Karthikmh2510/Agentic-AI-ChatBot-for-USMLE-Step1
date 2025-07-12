@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Secrets and credentials
+*.json
+
+# OS/mac files (optional)
+.DS_Store
+
+# Pycache
+__pycache__/
+*.py[cod]
