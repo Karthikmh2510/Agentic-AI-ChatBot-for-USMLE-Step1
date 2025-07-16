@@ -1,0 +1,21 @@
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+
+WORKDIR /app
+
+# ① install Python deps
+COPY pyproject.toml uv.lock ./
+ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
+# ② copy the project
+COPY . .
+
+# ③ make the background image available to the browser
+RUN mkdir -p /app/static && \
+    cp style/main_background.png /app/static/bg.png
+
+EXPOSE 8501
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

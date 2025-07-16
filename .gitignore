@@ -4,6 +4,11 @@
 # Virtual environment
 venv/
 
+# Logs folder
+logs/
+/logs/
+*.log
+
 # Secrets and credentials
 *.json
 
@@ -13,3 +18,10 @@ venv/
 # Pycache
 __pycache__/
 *.py[cod]
+*.pyc
+
+# Chat history
+/artifacts/*.bak
+/artifacts/*.dat
+/artifacts/*.dir 
+  

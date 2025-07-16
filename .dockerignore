@@ -1,0 +1,21 @@
+# --- copy your existing Git ignores that don't belong in the image ---
+.env
+logs/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# virtual environments (both names you used)
+venv/
+.venv/
+
+# large artifacts, notebooks, datasets
+artifacts/
+notebook/
+*.ipynb
+*.pdf
+*.csv
+*.parquet
+
+# Git repo itself
+.git

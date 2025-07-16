@@ -1,0 +1,12 @@
+[theme]
+primaryColor            = "#D32F2F"   # Bold medical red (buttons / highlights)
+backgroundColor         = "#E6F4FF"   # Soft sky‑blue — page base
+secondaryBackgroundColor= "#CCE9FF"   # Pale sky‑blue — chat bubbles / cards
+textColor               = "#000000"   # Solid black for maximum contrast
+font                    = "sans serif"
+
+[server]
+headless     = true
+runOnSave    = false          # turn off file‑watcher
+[browser]
+gatherUsageStats = false

@@ -21,6 +21,11 @@ import torch
 from src.logger import get_logger
 from src.custome_exception import CustomException
 
+from judgeval.integrations.langgraph import JudgevalCallbackHandler
+from judgeval.common.tracer import Tracer
+from judgeval.scorers import AnswerRelevancyScorer,FaithfulnessScorer
+
+# Initialize logger
 logger = get_logger(__name__)
 logger.info("Agentic RAG Started")
 
@@ -36,6 +41,8 @@ OPENAI_KEY      = os.getenv("OPENAI_API_KEY")
 HUGGINGFACE_API = os.getenv("HUGGINGFACE_API_KEY")
 PINECONE_KEY    = os.getenv("PINECONE_API_KEY")
 TAVILY_API_KEY  = os.getenv("TAVILY_API_KEY")
+JUDGMENT_API_KEY = os.getenv("JUDGMENT_API_KEY")
+JUDGMENT_ORG_ID = os.getenv("JUDGMENT_ORG_ID")
 PINECONE_INDEX = os.getenv("PINECONE_INDEX")
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
@@ -55,6 +62,16 @@ if not TAVILY_API_KEY:
     raise CustomException("TAVILY_API_KEY is missing", sys)
 if not HUGGINGFACE_API:
     raise CustomException("HUGGINGFACE_API_KEY is missing", sys)
+if not JUDGMENT_API_KEY:
+    raise CustomException("JUDGMENT_API_KEY is missing", sys)
+if not JUDGMENT_ORG_ID:
+    raise CustomException("JUDGMENT_ORG_ID is missing", sys)
+if not LANGSMITH_API_KEY:
+    raise CustomException("LANGSMITH_API_KEY is missing", sys)
+if not LANGSMITH_TRACING:
+    raise CustomException("LANGSMITH_TRACING is missing", sys)
+if not LANGSMITH_ENDPOINT:
+    raise CustomException("LANGSMITH_ENDPOINT is missing", sys)
 if not PINECONE_INDEX:
     raise CustomException("PINECONE_INDEX is missing", sys)
 
@@ -146,6 +163,7 @@ SYSTEM_PROMPT = (
     "► If the learner explicitly asks for a *detailed* explanation, expand your rationale to a fuller paragraph before the final answer."
 )
 
+
 ASSISTANT_PROMPT = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),
     ("human", "{question}"),
@@ -184,7 +202,6 @@ tavily_tool = TavilySearch(max_results=5, topic="general", language="en",
                            description=("Use this tool for real-time news or updates. "
                                     "Only call when question requires up-to-date info."))
 
-# Tavily Node ---------
 def tavily_search(state: AgentState):
     logger.info("Tavily search invoked")
     question = state["messages"][0].content
@@ -242,6 +259,31 @@ def rewrite_query(state: AgentState):
     response = LLM.invoke([HumanMessage(content=prompt)])
     return {"messages": [response]}
 
+# JudgmentLabs Evaluation for our LLM ----------------------------------------------------------
+def judgment_eval(state:AgentState):
+    logger.info("Evaluation for Relevancy and Faithfulness begins.....")
+    judgment = Tracer(project_name="USMLE_Step1", api_key= JUDGMENT_API_KEY,organization_id=JUDGMENT_ORG_ID)
+
+    user_input = str(state["messages"][0].content)
+    llm_output = str(state["messages"][-1].content)
+    model_name="gpt-4.1-mini-2025-04-14"
+
+    retrieve_from_vectorstores = []
+    for i in RETRIEVER.invoke(user_input):
+        retrieve_from_vectorstores.append(i.page_content)
+    retrieval_context = list(retrieve_from_vectorstores[0])
+
+    judgment.async_evaluate(
+        scorers=[AnswerRelevancyScorer(threshold=0.8),FaithfulnessScorer(threshold=0.8)],
+        input=user_input,
+        actual_output=llm_output,
+        model=model_name,
+        retrieval_context=retrieval_context
+    )
+
+    return state
+
+
 # ==============================================================================================
 # 7. WORKFLOW COMPILATION                                                                      |
 # ==============================================================================================
@@ -256,6 +298,7 @@ def build_graph():
     wf.add_node("Output_Generator", generate_answer)
     wf.add_node("Query_Rewriter", rewrite_query)
     wf.add_node("Tavily_Search", tavily_search)
+    wf.add_node("judgment_eval", judgment_eval)
 
     wf.add_edge(START, "AI_Assistant")
 
@@ -272,7 +315,8 @@ def build_graph():
     
     wf.add_edge("Tavily_Search", "AI_Assistant")
     wf.add_edge("Tavily_Search", "Output_Generator")
-    wf.add_edge("Output_Generator", END)
+    wf.add_edge("Output_Generator", "judgment_eval")
+    wf.add_edge("judgment_eval", END)
     wf.add_edge("Query_Rewriter", "AI_Assistant")
 
     return wf.compile()
@@ -286,18 +330,54 @@ GRAPH = build_graph()
 def ask(question: str) -> str:
     """High‑level helper that returns the assistant's answer string."""
     try:
-        result = GRAPH.invoke({"messages":[question]})
+        logger.info("Question received: %s", question.replace("\\n", " ")[:100])
+
+        judgment = Tracer(project_name="USMLE_Step1", api_key= JUDGMENT_API_KEY,organization_id=JUDGMENT_ORG_ID)
+        handler = JudgevalCallbackHandler(judgment)
+        initial_state = {"messages": [question]}
+        config_with_callbacks = {"callbacks": [handler]}
+
+        result = GRAPH.invoke(initial_state, config=config_with_callbacks)
         answer = result["messages"][-1].content
         logger.info("Answer generated")
+
+        logger.info("Executed Nodes: %s", handler.executed_nodes)
+        logger.info("Executed Tools: %s", handler.executed_tools)
+        logger.info("Node/Tool Flow: %s", handler.executed_node_tools)
+
         return answer
     except Exception as exc:
         logger.error("Error during ask()")
         raise CustomException(str(exc), sys) from exc
-
+    
 # ==============================================================================================
 # 9. CLI / Quick demo                                                                          |
 # ==============================================================================================
 
 if __name__ == "__main__":
     demo_q = "Give the table of lysosomal storage disorders"
-    print(ask(demo_q))
+    demo_q1 = "What is the latest news for USMLE Step1 examination?"
+
+    question1=''' 
+        A 76-year-old African American man presents to his primary care 
+        provider complaining of urinary frequency. He wakes up 3-4 times per night 
+        to urinate while he previously only had to wake up once per night. He also 
+        complains of post-void dribbling and difficulty initiating a stream of 
+        urine. He denies any difficulty maintaining an erection. His past medical 
+        history is notable for non-alcoholic fatty liver disease, hypertension, 
+        hyperlipidemia, and gout. He takes aspirin, atorvastatin, enalapril, and 
+        allopurinol. His family history is notable for prostate cancer in his 
+        father and lung cancer in his mother. He has a 15-pack-year smoking 
+        history and drinks alcohol socially. On digital rectal exam, his prostate 
+        is enlarged, smooth, and non-tender. Which of the following medications is 
+        indicated in this patient? 
+        Options: 
+        A: Clonidine, 
+        B: Hydrochlorothiazide, 
+        C: Midodrine, 
+        D: Oxybutynin, 
+        E: Tamsulosin 
+        '''
+    
+    # print(ask(demo_q))
+    print(ask(demo_q1))

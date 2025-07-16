@@ -6,7 +6,9 @@ langchain
 langchain-core
 langchain_openai
 langchain-community
-langchain_pinecone
+langchain-pinecone
+pinecone
+langchain-tavily
 langchain-text-splitters
 
 python-dotenv
@@ -14,9 +16,12 @@ python-dotenv
 PyPDF2
 pdfplumber
 
-pinecone-client[grpc]
-
 transformers
 torch
+typing-extensions
 
 streamlit
+flask
+flask-cors
+
+judgeval
