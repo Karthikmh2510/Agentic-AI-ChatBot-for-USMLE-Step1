@@ -1,12 +1,12 @@
 # Agentic AI Chatbot for **USMLE Step‑1**
 
----
+
 
 ## 1  Overview
 
 This project is an end‑to‑end, **retrieval‑augmented‑generation (RAG)** system that answers United States Medical Licensing Examination (USMLE) Step‑1 questions. It couples a custom medical knowledge base stored in Pinecone with an agentic reasoning graph built with LangGraph. The chatbot is exposed through a lightweight **Flask** API and an interactive **Streamlit** front‑end, and is fully containerised with separate Docker images for the back‑end and front‑end plus a `docker‑compose` orchestrator.
 
----
+
 
 ## 2  Motivation
 
@@ -16,7 +16,7 @@ Studying for Step‑1 requires rapid recall of thousands of facts spread across 
 * justify each answer with concise clinical reasoning; and
 * improve continuously through automated tracing & evaluation.
 
----
+
 
 ## 3  Goals & Objectives
 
@@ -25,7 +25,7 @@ Studying for Step‑1 requires rapid recall of thousands of facts spread across 
 3. **Observability out of the box.** Collect structured traces in **LangSmith** and score every response for faithfulness & relevancy via **JudgmentLabs (Judgeval)**.
 4. **Seamless deployment.** Provide a one‑command `docker‑compose` stack that spins up the API and UI with sensible defaults.
 
----
+
 
 ## 4  Solution Approach
 
@@ -41,6 +41,11 @@ User ➜ Streamlit ➜ Flask /chat ➜ LangGraph Agent
           ▼
         JSON Response ➜ Streamlit renderer
 ```
+<!-- Architecture diagram -->
+<p align="center">
+          <img width="520" alt="image" src="https://github.com/user-attachments/assets/dbc01165-83bb-4069-80ea-f07202ab81ef" />
+</p>
+
 
 1. **Embedding & Storage :** All source documents are embedded offline with `MedEmbed‑large‑v0.1` and pushed to a dedicated Pinecone index.
 2. **Conversation Flow :** The LangGraph graph routes each user message through specialised nodes. If retrieval fails a grader node triggers query rewriting or real‑time web search.
@@ -55,7 +60,7 @@ User ➜ Streamlit ➜ Flask /chat ➜ LangGraph Agent
 
 The Streamlit UI mimics a chat interface, persists history with `shelve`, and calls the back‑end REST endpoint. A custom CSS layer (`style/chatbot_style.py`) applies a dark mode theme and brand imagery.
 
----
+
 
 ## 5  Tech Stack
 
@@ -71,7 +76,7 @@ The Streamlit UI mimics a chat interface, persists history with `shelve`, and ca
 | Front‑end       | **Streamlit**                                        | Chat UI                              |
 | Infrastructure  | Docker (backend & frontend images), `docker‑compose` | Local / edge deployment              |
 
----
+
 
 ## 6  Repository Layout
 
@@ -94,7 +99,7 @@ The Streamlit UI mimics a chat interface, persists history with `shelve`, and ca
 └─ requirements.txt / pyproject.toml
 ```
 
----
+
 
 ## 7  Getting Started
 
@@ -145,7 +150,7 @@ Minimum keys required in `.env`:
 ```env
 OPENAI_API_KEY=...
 PINECONE_API_KEY=...
-PINECONE_INDEX=usmle-index
+PINECONE_INDEX=
 HUGGINGFACE_API_KEY=...
 TAVILY_API_KEY=...
 LANGSMITH_API_KEY=...
@@ -155,20 +160,17 @@ JUDGMENT_API_KEY=...
 JUDGMENT_ORG_ID=...
 ```
 
----
-
 ## 8  Usage
 
 Open the Streamlit UI, type any Step‑1 style prompt (e.g. *“Compare Crohn disease with ulcerative colitis.”*) and press Enter. The UI renders the dialogue with markdown support, tables, and inline LaTeX where relevant. Click **Clear Chat** in the sidebar to reset the session.
 
----
 
 ## 9  Observability & Quality Checks
 
 * **Trace Viewer:** Each request appears in your \[LangSmith] dashboard with time‑stamped nodes and token‑level costs.
 * **Judgeval Reports:** After the answer node executes, two scorers evaluate relevancy & faithfulness using the retrieved context. Failing scores are logged for prompt refinement.
 
----
+
 
 ## 10  Roadmap
 
@@ -177,7 +179,7 @@ Open the Streamlit UI, type any Step‑1 style prompt (e.g. *“Compare Crohn di
 * ⚡ Serve models through GPU‑enabled inference API (e.g. Groq or Together.ai) for faster answers
 * 📈 Grafana / Prometheus metrics for latency & throughput monitoring
 
----
+
 
 ## 11  License & Disclaimer
 
