@@ -1,7 +1,6 @@
 # Agentic AI Chatbot for **USMLE Step‑1**
 
 
-
 ## 1  Overview
 
 This project is an end‑to‑end, **retrieval‑augmented‑generation (RAG)** system that answers United States Medical Licensing Examination (USMLE) Step‑1 questions. It couples a custom medical knowledge base stored in Pinecone with an agentic reasoning graph built with LangGraph. The chatbot is exposed through a lightweight **Flask** API and an interactive **Streamlit** front‑end, and is fully containerised with separate Docker images for the back‑end and front‑end plus a `docker‑compose` orchestrator.
