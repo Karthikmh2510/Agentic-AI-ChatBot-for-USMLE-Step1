@@ -1,105 +1,184 @@
-# RAG-Powered GenAI Application for USMLE Step-1 Query Answering
-
-## Overview
-This project is a **RAG-Powered GenAI Application for USMLE Step-1 Query Answering** powered by **Google Gemini 2.0**, **Pinecone Vector Database**, and **Hugging Face Medical Embeddings**. It allows users to ask medical-related questions and receive detailed, context-aware answers based on medical documents stored in a vector database.
-
-## Features
-- **Medical Query Answering**: Provides detailed answers to USMLE Step-1 related questions.
-- **Vector Database Integration**: Uses **Pinecone** for efficient retrieval of medical knowledge.
-- **Hugging Face Medical Embeddings**: Generates embeddings using **MedEmbed-large-v0.1** for better context understanding.
-- **Google Gemini 2.0 Model**: Utilizes the **Gemini-2.0-flash-thinking-exp** model for generating responses.
-- **Streamlit UI**: A simple and interactive web interface for users.
-- **Multi-Format Answering**: Provides structured responses including text, tables, and medical comparisons.
-- **Consent Management**: Ensures users acknowledge a medical disclaimer before using the chatbot.
-
-## Tech Stack
-- **Python**
-- **Streamlit** (Frontend UI)
-- **Pinecone** (Vector Database)
-- **LangChain** (LLM Orchestration)
-- **Google Generative AI** (Gemini LLM)
-- **Transformers** (Hugging Face Models)
-- **Torch** (Deep Learning Backend)
-- **dotenv** (Environment Variables Management)
-
-## Installation
-### Prerequisites
-- Python 3.8+
-- API keys for **Pinecone**, **Google Generative AI**, and **Hugging Face**
-
-### Steps
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/Kathikmh2510/USMLE-RAG.git
-   cd USMLE-RAG
-   ```
-2. **Create and Activate Virtual Environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-3. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Set Environment Variables**
-   Create a `.env` file and add the required API keys:
-   ```env
-   PINECONE_API_KEY=your_pinecone_api_key
-   GOOGLE_API_KEY=your_google_api_key
-   HUGGINGFACE_API_KEY=your_huggingface_api_key
-   ```
-5. **Run the Application**
-   ```bash
-   streamlit run app.py
-   ```
-
-## Usage
-1. Open the **Streamlit UI** in your browser.
-2. Enter a **medical question** related to USMLE Step-1.
-3. Click **Get Answer**.
-4. The chatbot retrieves relevant medical information and provides an **accurate, structured response**.
-
-## Project Structure
-```
-|-- app.py                  # Main Streamlit application
-|-- requirements.txt        # Required dependencies
-|-- .env.example            # Example environment file
-|-- utils/                  # Helper functions
-|-- models/                 # Embedding and LLM initialization
-|-- data/                   # Optional dataset storage
-```
-
-## API Workflow
-1. **User Input**: A question is entered in the UI.
-2. **Text Embeddings**: The question is embedded using `MedEmbed-large-v0.1`.
-3. **Vector Search**: Pinecone retrieves relevant documents.
-4. **LLM Processing**: Gemini 2.0 generates a response based on retrieved context.
-5. **Answer Delivery**: The chatbot presents the response in a structured format.
-
-## Example Queries
-- "What are the risk factors for Type 2 Diabetes?"
-- "Compare and contrast Crohn’s Disease and Ulcerative Colitis."
-- "Which of the following is the most likely diagnosis based on these symptoms? (MCQ format)"
-
-## Disclaimer
-- **Educational Purposes Only**: This chatbot is not a substitute for professional medical advice.
-- **Consult a Medical Professional**: Always consult a healthcare provider for medical conditions.
-- **Emergency Notice**: If you experience a medical emergency, seek immediate medical attention.
-
-## Future Enhancements
-- Improve response accuracy with **advanced prompt engineering**.
-- Enhance UI with **interactive elements**.
-- Expand **vector database** with additional medical resources.
-- Implement **real-time API logging** for better debugging.
-
-## Contributors
-- **Karthik Manjunath Hadagali** – Developer & AI Engineer at MealMatch AI
-
-## License
-This project is licensed under the [MIT License](LICENSE). Feel free to contribute and enhance it!
+# Agentic AI Chatbot for **USMLE Step‑1**
 
 ---
 
-**🌟 If you found this project helpful, consider giving it a star ⭐ on GitHub!**
+## 1  Overview
 
+This project is an end‑to‑end, **retrieval‑augmented‑generation (RAG)** system that answers United States Medical Licensing Examination (USMLE) Step‑1 questions. It couples a custom medical knowledge base stored in Pinecone with an agentic reasoning graph built with LangGraph. The chatbot is exposed through a lightweight **Flask** API and an interactive **Streamlit** front‑end, and is fully containerised with separate Docker images for the back‑end and front‑end plus a `docker‑compose` orchestrator.
+
+---
+
+## 2  Motivation
+
+Studying for Step‑1 requires rapid recall of thousands of facts spread across diverse sources. Traditional flash‑card or static Q‑bank apps cannot personalise explanations in real time. The goal of this project is to provide an **on‑demand tutor** that can:
+
+* surface the most relevant authoritative content for any high‑yield question;
+* justify each answer with concise clinical reasoning; and
+* improve continuously through automated tracing & evaluation.
+
+---
+
+## 3  Goals & Objectives
+
+1. **High‑precision retrieval.** Embed curated medical texts with `MedEmbed‑large‑v0.1` and store them in Pinecone for millisecond‑level semantic search.
+2. **Agentic reasoning.** Orchestrate document retrieval, query rewriting, web search fall‑back, answer generation, and grading through a LangGraph state machine.
+3. **Observability out of the box.** Collect structured traces in **LangSmith** and score every response for faithfulness & relevancy via **JudgmentLabs (Judgeval)**.
+4. **Seamless deployment.** Provide a one‑command `docker‑compose` stack that spins up the API and UI with sensible defaults.
+
+---
+
+## 4  Solution Approach
+
+### 4.1  RAG Pipeline
+
+```
+User ➜ Streamlit ➜ Flask /chat ➜ LangGraph Agent
+          │                    │
+          │                    ├─▶ RetrieverTool (Pinecone)
+          │                    ├─▶ Query‑Rewriter (LLM)
+          │                    ├─▶ Tavily Web Search
+          │                    └─▶ Answer Generator (LLM)
+          ▼
+        JSON Response ➜ Streamlit renderer
+```
+
+1. **Embedding & Storage :** All source documents are embedded offline with `MedEmbed‑large‑v0.1` and pushed to a dedicated Pinecone index.
+2. **Conversation Flow :** The LangGraph graph routes each user message through specialised nodes. If retrieval fails a grader node triggers query rewriting or real‑time web search.
+3. **Answer Format :** The assistant returns a 2‑4 sentence rationale followed by the single best answer on a new line (e.g. `**Answer: Tamsulosin**`).
+
+### 4.2  Tracing & Evaluation
+
+* **LangSmith**: Every run records prompts, tool calls, latencies, and token usage. This enables offline inspection and prompt tuning.
+* **JudgmentLabs**: Each response is automatically scored with *Answer Relevancy* and *Faithfulness* scorers (threshold ≥ 0.8). Scores and execution graphs are saved back to LangSmith for unified observability.
+
+### 4.3  Front‑end
+
+The Streamlit UI mimics a chat interface, persists history with `shelve`, and calls the back‑end REST endpoint. A custom CSS layer (`style/chatbot_style.py`) applies a dark mode theme and brand imagery.
+
+---
+
+## 5  Tech Stack
+
+| Layer           | Technology                                           | Purpose                              |
+| --------------- | ---------------------------------------------------- | ------------------------------------ |
+| LLM / Reasoning | **OpenAI GPT‑4.1‑mini**                              | Primary language model               |
+| Embeddings      | **MedEmbed‑large‑v0.1 (HF)**                         | Domain‑specific text embeddings      |
+| Vector Store    | **Pinecone**                                         | Approximate‑nearest‑neighbour search |
+| Orchestration   | **LangChain + LangGraph**                            | Tool binding & state graph           |
+| Evaluation      | **JudgmentLabs (Judgeval)**                          | Automated scoring                    |
+| Tracing         | **LangSmith**                                        | End‑to‑end run tracing               |
+| Back‑end        | **Flask + uvicorn via uv**                           | REST API & health checks             |
+| Front‑end       | **Streamlit**                                        | Chat UI                              |
+| Infrastructure  | Docker (backend & frontend images), `docker‑compose` | Local / edge deployment              |
+
+---
+
+## 6  Repository Layout
+
+```
+.
+├─ .streamlit/            # Streamlit config
+├─ artifacts/             # Persisted chat history & logs
+├─ notebook/              # Exploration / dataset prep
+├─ src/
+│   ├─ Agentic_RAG_Evaluation.py  # Core LangGraph workflow
+│   ├─ logger.py         # Structured logging helper
+│   └─ custome_exception.py
+├─ utils/                 # Misc helpers
+├─ style/                 # CSS & images
+├─ app.py                 # Flask entry‑point
+├─ streamlit_app.py       # Streamlit UI entry‑point
+├─ Dockerfile.backend     # Build backend image
+├─ Dockerfile.frontend    # Build frontend image
+├─ docker‑compose.yml     # Orchestrate both services
+└─ requirements.txt / pyproject.toml
+```
+
+---
+
+## 7  Getting Started
+
+### 7.1  Local Development (Python ≥ 3.11)
+
+```bash
+# Clone & enter
+$ git clone https://github.com/Karthikmh2510/Agentic-AI-ChatBot-for-USMLE-Step1.git
+$ cd Agentic-AI-ChatBot-for-USMLE-Step1
+
+# Install deps (uv recommended)
+$ pip install uv
+$ uv pip install -r requirements.txt
+
+# Environment
+$ cp .env.example .env  # edit API keys & Pinecone index name
+
+# Run services
+$ python app.py          # starts backend on :8080
+$ streamlit run streamlit_app.py  # starts UI on :8501
+```
+
+### 7.2  Containerised Deployment
+
+1. **Build images** (optional – Compose will build if they’re missing):
+
+   ```bash
+   docker build -f Dockerfile.backend -t usmle-rag-backend:latest .
+   docker build -f Dockerfile.frontend -t usmle-rag-frontend:latest .
+   ```
+2. **Start the stack**:
+
+   ```bash
+   docker-compose up --build -d
+   ```
+
+   * Back‑end: `http://localhost:8080`  \* Front‑end: `http://localhost:8501`
+3. **Shut down**:
+
+   ```bash
+   docker-compose down
+   ```
+
+### 7.3  Environment Variables
+
+Minimum keys required in `.env`:
+
+```env
+OPENAI_API_KEY=...
+PINECONE_API_KEY=...
+PINECONE_INDEX=usmle-index
+HUGGINGFACE_API_KEY=...
+TAVILY_API_KEY=...
+LANGSMITH_API_KEY=...
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+JUDGMENT_API_KEY=...
+JUDGMENT_ORG_ID=...
+```
+
+---
+
+## 8  Usage
+
+Open the Streamlit UI, type any Step‑1 style prompt (e.g. *“Compare Crohn disease with ulcerative colitis.”*) and press Enter. The UI renders the dialogue with markdown support, tables, and inline LaTeX where relevant. Click **Clear Chat** in the sidebar to reset the session.
+
+---
+
+## 9  Observability & Quality Checks
+
+* **Trace Viewer:** Each request appears in your \[LangSmith] dashboard with time‑stamped nodes and token‑level costs.
+* **Judgeval Reports:** After the answer node executes, two scorers evaluate relevancy & faithfulness using the retrieved context. Failing scores are logged for prompt refinement.
+
+---
+
+## 10  Roadmap
+
+* 🔍 Add Per‑question *explain‑why‑score* feedback
+* 🏥 Integrate UMLS & PubMed abstracts to widen knowledge base
+* ⚡ Serve models through GPU‑enabled inference API (e.g. Groq or Together.ai) for faster answers
+* 📈 Grafana / Prometheus metrics for latency & throughput monitoring
+
+---
+
+## 11  License & Disclaimer
+
+This work is released under the **MIT License**. All content is for **educational purposes only** and must **not** be used to make clinical decisions. Always consult a qualified physician for medical advice.
