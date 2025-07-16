@@ -5,7 +5,13 @@
 
 This project is an end‑to‑end, **retrieval‑augmented‑generation (RAG)** system that answers United States Medical Licensing Examination (USMLE) Step‑1 questions. It couples a custom medical knowledge base stored in Pinecone with an agentic reasoning graph built with LangGraph. The chatbot is exposed through a lightweight **Flask** API and an interactive **Streamlit** front‑end, and is fully containerised with separate Docker images for the back‑end and front‑end plus a `docker‑compose` orchestrator.
 
+# **Live Chat Interface**
 
+<p align="center">
+          <img width="1914" height="973" alt="image" src="https://github.com/user-attachments/assets/f7303c90-a5ba-45f4-aa7f-d190cef7cfd4" />
+</p>
+
+> **Figure 1.** Streamlit front‑end showcasing real‑time Q&A, source highlighting, and session history.
 
 ## 2.  Motivation
 
