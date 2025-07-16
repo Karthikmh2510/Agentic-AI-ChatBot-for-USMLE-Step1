@@ -10,13 +10,12 @@ def build_bg_rule(background_url: str | None) -> str:
     encoded = base64.b64encode(Path("style/main_background.png").read_bytes()).decode()
     return f'background: url("data:image/png;base64,{encoded}") center/cover fixed;'
 
-
 def app_css(background_url: str | None = None) -> str:
     bg_rule = build_bg_rule(background_url)
 
     return f"""
     <style>
-    /* ─── PAGE LAYOUT ─────────────────────────────────────────────────── */
+    /* ───── GLOBAL LAYOUT ──────────────────────────────────────────────── */
     html, body, .stApp {{
         height: 100%;
         margin: 0;
@@ -25,99 +24,65 @@ def app_css(background_url: str | None = None) -> str:
         color: #000 !important;
     }}
 
+    /* 1️⃣  Keep the Streamlit header always visible */
+    header[data-testid="stHeader"] {{
+        position: fixed;            /* stay at the top */
+        top: 0; left: 0; right: 0;
+        z-index: 1000;
+        background: #e9f4ff;        /* match your pale-blue theme */
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }}
+
+    /* Give the page body breathing room beneath the fixed header */
     .block-container {{
+        margin-top: 3.5rem;         /* ≈ header height */
         padding-top: 0 !important;
         padding-bottom: 1rem !important;
+        max-width: 1400px !important;  /* 2️⃣  widen chat column */
+        width: 90%;
     }}
 
-    /* ─── TITLE ───────────────────────────────────────────────────────── */
-    .app-title {{
-        width: 100%;
-        text-align: center;
-        margin: 1rem 0 1.25rem;
-        font-size: clamp(2rem, 4vw, 3rem);
-        font-weight: 700;
-        line-height: 1.2;
-        text-shadow: 0 0 6px rgba(255,255,255,.65);
-    }}
-
-    /* ─── CHAT BUBBLES ────────────────────────────────────────────────── */
+    /* ───── MESSAGE CARDS (kept from previous answer, plus tweaks) ─────── */
     .user-msg,
     .bot-msg {{
-        padding: .70rem 1.05rem;
-        margin:  .35rem 0;
-        max-width: 90%;
-        font-size: .95rem;
-        line-height: 1.45;
-        border-radius: .65rem;
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
-        color: #000 !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,.10);
-        display:flex;
-        align-items:flex-start;
-        gap:.55rem;
+        width: 100%;
+        padding: .9rem 1.2rem;
+        margin:  .45rem 0;
+        display: flex;
+        gap: .75rem;
+        background: #ffffffee;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+        border-radius: .45rem;
+        border-inline-start: 6px solid var(--accent);
     }}
-
-    .user-msg {{
-        margin-left: auto;
-        background: rgba(0,123,255,.15);
-        border: 1px solid rgba(0,123,255,.35);
+    .user-msg {{ --accent: #0068d6; 
+        background: rgba(0, 104, 214, .20);  /* was .15 → a touch darker       */
+        border-inline-start-color: var(--accent);
     }}
+    .bot-msg  {{ --accent: #02a89e; }}
 
-    .bot-msg {{
-        margin-right: auto;
-        background: rgba(255,255,255,.82);
-        border: 1px solid rgba(0,0,0,.08);
-    }}
-
-    .msg-icon {{
-        font-size: 1.45rem;
-        line-height: 1;
-        flex-shrink: 0;
-    }}
-
+    .msg-icon {{ font-size: 1.45rem; line-height: 1; flex-shrink: 0; }}
     .msg-text {{
         flex: 1;
-        white-space: pre-wrap;
+        white-space: normal;
         overflow-wrap: anywhere;
+        overflow-x: auto;           /* table fallback */
     }}
 
-    /* ─── TYPING INDICATOR ───────────────────────────────────────────── */
-    .typing span {{
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        margin: 0 2px;
-        border-radius: 50%;
-        background: #666;
-        opacity: 0;
-        animation: blink 1.2s infinite;
-    }}
-    .typing span:nth-child(2) {{ animation-delay: .2s; }}
-    .typing span:nth-child(3) {{ animation-delay: .4s; }}
-
-    @keyframes blink {{
-        0%, 80% {{ opacity: 0; }}
-        40%     {{ opacity: 1; }}
+    /* 2️⃣  Wide tables should fill the card, not shrink it */
+    .msg-text table {{
+        width: 100%;               /* use all the card space */
+        border-collapse: collapse;
     }}
 
-    /* ─── SIDEBAR TOGGLE ─────────────────────────────────────────────── */
-    header[data-testid="stHeader"] button[kind="header"] {{
-        z-index: 999 !important;
+    /* ───── SIDEBAR HANDLE (unchanged) ─────────────────────────────────── */
+    header[data-testid="stHeader"] button[kind="header"]{{z-index:1001!important;}}
+    header[data-testid="stHeader"] button[kind="header"] svg{{color:#000!important;}}
+    [data-testid="stSidebar"][aria-expanded="false"]{{
+        width:6px!important;cursor:pointer;background:rgba(255,255,255,.35);
+        transition:background .25s;
     }}
-    header[data-testid="stHeader"] button[kind="header"] svg {{
-        color: #000 !important;
-    }}
-
-    [data-testid="stSidebar"][aria-expanded="false"] {{
-        width: 6px !important;
-        cursor: pointer;
-        background: rgba(255,255,255,.35);
-        transition: background .25s;
-    }}
-    [data-testid="stSidebar"][aria-expanded="false"]:hover {{
-        background: rgba(255,255,255,.6);
-    }}
+    [data-testid="stSidebar"][aria-expanded="false"]:hover{{background:rgba(255,255,255,.6);}}
     </style>
     """
+
