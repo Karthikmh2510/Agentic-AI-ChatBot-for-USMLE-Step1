@@ -8,7 +8,7 @@ This project is an end‑to‑end, **retrieval‑augmented‑generation (RAG)** 
 # **Live Chat Interface**
 
 <p align="center">
-         ![alt text](image.png)
+         <img width="1919" height="967" alt="image" src="https://github.com/user-attachments/assets/0580dea2-a0c0-413e-9bf6-4af15c0b5971" />
 </p>
 
 > **Figure 1.** Streamlit front‑end showcasing real‑time Q&A, source highlighting, and session history.
