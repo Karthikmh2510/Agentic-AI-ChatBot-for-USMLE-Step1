@@ -2,21 +2,20 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 WORKDIR /app
 
-# ① install Python deps
+#  install Python deps
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" \
     UV_LINK_MODE=copy
-RUN uv sync --frozen --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-
-# ② (optional) download the MedEmbed model once at build‑time
+#  (optional) download the MedEmbed model once at build‑time
 RUN python - <<'PY'
 from transformers import AutoTokenizer, AutoModel
 AutoTokenizer.from_pretrained("abhinand/MedEmbed-large-v0.1")
 AutoModel.from_pretrained("abhinand/MedEmbed-large-v0.1")
 PY
 
-# ③ copy source
+#  copy source
 COPY . .
 
 EXPOSE 8080
