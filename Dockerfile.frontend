@@ -1,25 +1,35 @@
+# ─── Base image with uv + Python 3.11 ──────────────────────────────────────────
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 WORKDIR /app
 
-#  install Python deps
+# ─── Install git‑lfs so we can fetch the real PNG ─────────────────────────────
+RUN apt-get update && \
+    apt-get install -y git-lfs && \
+    git lfs install
+
+# ─── Copy ONLY the pointer PNG and .gitattributes into the layer ──────────────
+# (This keeps the build context small.)
+COPY .gitattributes style/slidebar_background.png style/
+
+# ─── Fetch the real LFS blob, then wipe .git to keep the image clean ──────────
+RUN git init && \
+    git remote add -f origin https://github.com/Karthikmh2510/Agentic-AI-ChatBot-for-USMLE-Step1 && \
+    git lfs pull --include="style/slidebar_background.png" && \
+    rm -rf .git
+
+# ─── Copy the rest of your application code & install Python deps ─────────────
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-#  copy the project
 COPY . .
 
-#  make the background image available to the browser
+# Optional: replicate your earlier “main background” copy step
 RUN mkdir -p /app/static && \
     cp style/main_background.png /app/static/bg.png
 
-# ---- install git-lfs & fetch blobs ----
-RUN apt-get update && apt-get install -y git-lfs \
-    && git lfs install \
-    && git lfs pull
-
+# ─── Runtime configuration ────────────────────────────────────────────────────
 EXPOSE 8501
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
-
 CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
