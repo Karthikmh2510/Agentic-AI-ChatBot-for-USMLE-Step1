@@ -2,12 +2,16 @@
 import streamlit as st
 import requests, shelve, os, time
 from style.chatbot_style import app_css          # your helper
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # ─── Paths & constants ──────────────────────────────────────────────
+BACKEND_URL    = os.getenv("BACKEND_URL")
 ARTIFACT_DIR   = "artifacts"
 DB_PATH        = os.path.join(ARTIFACT_DIR, "chat_history")
 BACKGROUND_URL = "/static/bg.png"                # served from Docker
-API_URL        = "http://backend:8080/chat"
+API_URL        = BACKEND_URL
 
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
 
