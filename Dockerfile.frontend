@@ -14,6 +14,11 @@ COPY . .
 RUN mkdir -p /app/static && \
     cp style/main_background.png /app/static/bg.png
 
+# ---- install git-lfs & fetch blobs ----
+RUN apt-get update && apt-get install -y git-lfs \
+    && git lfs install \
+    && git lfs pull
+
 EXPOSE 8501
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
