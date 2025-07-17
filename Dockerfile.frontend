@@ -1,31 +1,17 @@
-# ── 1. base image ─────────────────────────────────────────────────────────────
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 WORKDIR /app
 
-# ── 2. tools required to fetch LFS blobs ──────────────────────────────────────
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends git git-lfs && \
-    git lfs install
-
-# ── 3. copy the *entire* repo (incl. .git) so pointers are visible ────────────
-# Make sure .dockerignore does NOT exclude ".git"
-COPY . .
-
-# ── 4. replace LFS pointers with real files, then prune .git ──────────────────
-RUN git lfs pull origin HEAD && \
-    rm -rf .git
-
-# ── 5. install Python deps -----------------------------------------------------
+# Install Python deps
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-# ── 6. optional: move a second background into /static ------------------------
+# Copy the *entire* project (now includes real PNGs)
+COPY . .
+
 RUN mkdir -p /app/static && \
     cp style/main_background.png /app/static/bg.png
 
-# ── 7. runtime settings -------------------------------------------------------
 EXPOSE 8501
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
-CMD ["streamlit", "run", "streamlit_app.py",
-     "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit","run","streamlit_app.py","--server.port=8501","--server.address=0.0.0.0"]
