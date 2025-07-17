@@ -1,35 +1,31 @@
-# ─── Base image with uv + Python 3.11 ──────────────────────────────────────────
+# ── 1. base image ─────────────────────────────────────────────────────────────
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
-
 WORKDIR /app
 
-# ─── Install git‑lfs so we can fetch the real PNG ─────────────────────────────
+# ── 2. tools required to fetch LFS blobs ──────────────────────────────────────
 RUN apt-get update && \
-    apt-get install -y git-lfs && \
+    apt-get install -y --no-install-recommends git git-lfs && \
     git lfs install
 
-# ─── Copy ONLY the pointer PNG and .gitattributes into the layer ──────────────
-# (This keeps the build context small.)
-COPY .gitattributes style/slidebar_background.png style/
+# ── 3. copy the *entire* repo (incl. .git) so pointers are visible ────────────
+# Make sure .dockerignore does NOT exclude ".git"
+COPY . .
 
-# ─── Fetch the real LFS blob, then wipe .git to keep the image clean ──────────
-RUN git init && \
-    git remote add -f origin https://github.com/Karthikmh2510/Agentic-AI-ChatBot-for-USMLE-Step1 && \
-    git lfs pull --include="style/slidebar_background.png" && \
+# ── 4. replace LFS pointers with real files, then prune .git ──────────────────
+RUN git lfs pull origin HEAD && \
     rm -rf .git
 
-# ─── Copy the rest of your application code & install Python deps ─────────────
+# ── 5. install Python deps -----------------------------------------------------
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-COPY . .
-
-# Optional: replicate your earlier “main background” copy step
+# ── 6. optional: move a second background into /static ------------------------
 RUN mkdir -p /app/static && \
     cp style/main_background.png /app/static/bg.png
 
-# ─── Runtime configuration ────────────────────────────────────────────────────
+# ── 7. runtime settings -------------------------------------------------------
 EXPOSE 8501
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
-CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "streamlit_app.py",
+     "--server.port=8501", "--server.address=0.0.0.0"]
