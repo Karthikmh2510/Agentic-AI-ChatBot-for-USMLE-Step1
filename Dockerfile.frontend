@@ -5,8 +5,8 @@ WORKDIR /app
 # ① install Python deps
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev
+
 
 # ② copy the project
 COPY . .
