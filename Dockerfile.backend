@@ -15,11 +15,6 @@ AutoTokenizer.from_pretrained("abhinand/MedEmbed-large-v0.1")
 AutoModel.from_pretrained("abhinand/MedEmbed-large-v0.1")
 PY
 
-# ---- install git-lfs & fetch blobs ----
-RUN apt-get update && apt-get install -y git-lfs \
-    && git lfs install \
-    && git lfs pull
-
 #  copy source
 COPY . .
 
