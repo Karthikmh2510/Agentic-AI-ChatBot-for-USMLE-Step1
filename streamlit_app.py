@@ -1,14 +1,12 @@
 # streamlit_app.py
 import streamlit as st
 import requests, shelve, os, time
-from PIL import Image
 from style.chatbot_style import app_css          # your helper
 
 # ─── Paths & constants ──────────────────────────────────────────────
 ARTIFACT_DIR   = "artifacts"
 DB_PATH        = os.path.join(ARTIFACT_DIR, "chat_history")
 BACKGROUND_URL = "/static/bg.png"                # served from Docker
-SIDEBAR_LOGO   = "style/slidebar_background.png"
 API_URL        = "http://backend:8080/chat"
 
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
@@ -34,11 +32,24 @@ if "messages" not in st.session_state:
 
 # ─── Sidebar ───────────────────────────────────────────────────────
 with st.sidebar:
-    st.image(Image.open(SIDEBAR_LOGO), use_container_width=True)
     st.markdown(
         """
         ### 🧠 About  
         Ask MCQs, definitions, tables – anything high‑yield for **USMLE Step 1**.
+
+        **How to use:**  
+        • Type a question, paste an MCQ stem, or upload a PDF excerpt.<br>
+        • The model returns a concise answer **with explanations and citations**.<br>
+        • Click the clipboard icon to copy answers; use ⟳ to clear the chat.
+
+        **What’s covered:**  
+        • Organ systems (cardio, neuro, renal, etc.)<br>
+        • Biochem, genetics, micro, immuno, pathology, pharm<br>
+        • Classic “buzz‑words”, pathways, and lab values
+
+        **Disclaimer 🔬**  
+        This tool is for study support only—always verify with primary sources
+        (First Aid, NBME, UWorld) and follow your school’s honor code.
         """,
         unsafe_allow_html=True,
     )
