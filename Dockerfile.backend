@@ -6,7 +6,8 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 ENV UV_PROJECT_ENVIRONMENT="/usr/local/" \
     UV_LINK_MODE=copy
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
+
+RUN uv sync --frozen --no-dev
 
 #  (optional) download the MedEmbed model once at build‑time
 RUN python - <<'PY'
