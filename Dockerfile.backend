@@ -9,11 +9,10 @@ ENV UV_PROJECT_ENVIRONMENT="/usr/local/" \
 
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
 
-#  (optional) download the MedEmbed model once at build‑time
-RUN python - <<'PY'
-from transformers import AutoTokenizer, AutoModel
-AutoTokenizer.from_pretrained("abhinand/MedEmbed-large-v0.1")
-AutoModel.from_pretrained("abhinand/MedEmbed-large-v0.1")
+# Pre-download the MedEmbed model
+RUN python -c "from transformers import AutoTokenizer, AutoModel; \
+  AutoTokenizer.from_pretrained('abhinand/MedEmbed-large-v0.1'); \
+  AutoModel.from_pretrained('abhinand/MedEmbed-large-v0.1')"
 PY
 
 #  copy source
