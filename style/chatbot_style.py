@@ -1,30 +1,10 @@
-# style/chatbot_style.py
-from pathlib import Path
-import base64
 
-
-def build_bg_rule(background_url: str | None) -> str:
-    if background_url:
-        return f'background: url("{background_url}") center/cover fixed;'
-
-    encoded = base64.b64encode(Path("style/main_background.png").read_bytes()).decode()
-    return f'background: url("data:image/png;base64,{encoded}") center/cover fixed;'
-
-def app_css(background_url: str | None = None) -> str:
-    bg_rule = build_bg_rule(background_url)
+def app_css():
 
     return f"""
     <style>
-    /* ───── GLOBAL LAYOUT ──────────────────────────────────────────────── */
-    html, body, .stApp {{
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        {bg_rule}
-        color: #000 !important;
-    }}
-
-    /* 1️⃣  Keep the Streamlit header always visible */
+    
+    /*   Keep the Streamlit header always visible */
     header[data-testid="stHeader"] {{
         position: fixed;            /* stay at the top */
         top: 0; left: 0; right: 0;
@@ -38,7 +18,7 @@ def app_css(background_url: str | None = None) -> str:
         margin-top: 3.5rem;         /* ≈ header height */
         padding-top: 0 !important;
         padding-bottom: 1rem !important;
-        max-width: 1400px !important;  /* 2️⃣  widen chat column */
+        max-width: 1400px !important;  /*   widen chat column */
         width: 90%;
     }}
 
@@ -69,7 +49,7 @@ def app_css(background_url: str | None = None) -> str:
         overflow-x: auto;           /* table fallback */
     }}
 
-    /* 2️⃣  Wide tables should fill the card, not shrink it */
+    /*   Wide tables should fill the card, not shrink it */
     .msg-text table {{
         width: 100%;               /* use all the card space */
         border-collapse: collapse;
@@ -83,6 +63,33 @@ def app_css(background_url: str | None = None) -> str:
         transition:background .25s;
     }}
     [data-testid="stSidebar"][aria-expanded="false"]:hover{{background:rgba(255,255,255,.6);}}
+
+    /* ───── TYPING ANIMATION ─────────────────────────────────── */
+    .typing-ellipsis {{
+        display: inline-block;
+        width: 1.5em;
+        text-align: left;
+    }}
+    .typing-ellipsis span {{
+        display: inline-block;
+        width: .3em;
+        height: .3em;
+        margin-right: .15em;
+        background: #02a89e;
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: ellipsis-bounce 1.2s infinite;
+    }}
+    .typing-ellipsis span:nth-child(2) {{
+        animation-delay: 0.2s;
+    }}
+    .typing-ellipsis span:nth-child(3) {{
+        animation-delay: 0.4s;
+    }}
+    @keyframes ellipsis-bounce {{
+        0%, 80%, 100% {{ opacity: 0.3; transform: translateY(0);}}
+        40% {{ opacity: 1; transform: translateY(-0.25em);}}
+    }}
+
     </style>
     """
-

@@ -5,8 +5,7 @@ WORKDIR /app
 
 #  install Python deps
 COPY pyproject.toml uv.lock ./
-ENV UV_PROJECT_ENVIRONMENT="/usr/local/" \
-    UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT="/usr/local/" UV_LINK_MODE=copy
 
 RUN uv sync --frozen --no-dev
 
@@ -20,5 +19,5 @@ COPY . .
 
 EXPOSE 8080
 ENV FLASK_ENV=production       
-CMD ["uv", "run", "app.py"]
+CMD ["python", "app.py"]
 
