@@ -34,7 +34,7 @@ if "messages" not in st.session_state:
 
 # ─── Sidebar ───────────────────────────────────────────────────────
 with st.sidebar:
-    st.image(Image.open(SIDEBAR_LOGO), use_container_width=True)
+    st.image(Image.open("style/slidebar_background.png"), use_container_width=True)
     st.markdown(
         """
         ### 🧠 About  
